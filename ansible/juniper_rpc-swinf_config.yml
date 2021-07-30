@@ -1,0 +1,27 @@
+---
+- name: Playbook
+  hosts: firewalls
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+
+#  vars_prompt:
+#    - name: USERNAME
+#      prompt: Enter Username
+#      private: no
+#    - name: DEVICE_PASSWORD
+#      prompt: Enter Password
+#      private: yes
+  
+  tasks:
+    - name: software information via RPC module
+      juniper_junos_rpc:
+#        user: "{{ USERNAME }}"
+#        passwd: "{{ DEVICE_PASSWORD }}"
+        rpcs: get-software-information
+
+      register: rpc_response
+
+    - name: print out the RPC Reply
+      debug: var=rpc_response.stdout_lines
+# needs to be clarified        var: rpc_response["software-information"] ["package-information"] ["comment"]

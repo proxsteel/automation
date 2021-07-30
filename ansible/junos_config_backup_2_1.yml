@@ -1,0 +1,41 @@
+---
+- name: Backing up device's configuration
+  roles:
+    - Juniper.junos
+  hosts: 
+    - srx210-1
+    - srx210-2
+  connection: local
+  gather_facts: no
+
+  vars:
+    systime: "{{ansible_date_time.time | replace(':', '_')}}"
+    timestamp: "{{ansible_date_time.date}}_{{systime}}"
+    backup_dir: "{{ user_data_path }}/backups/{{inventory_hostname}}"  
+    backup_conf_file: "{{backup_dir}}/{{inventory_hostname}}__{{timestamp}}.conf"
+    connection_settings:
+      host: "{{ansible_host}}"
+      passwd: "{{ansible_ssh_pass}}"
+      user: "{{ansible_user}}"
+  
+  tasks:
+    - name: Collect localhost environment variable avoiding first Play from 2nd version playbook
+      setup: #like ansible localhost -m setup
+      run_once: yes  #Bool that will bypass the host loop, forcing the task to attempt to execute on the first host available and afterwards apply any results and facts to all active hosts in the same batch.
+      delegate_to: 'localhost'  #checking or creating a directory on the local file system - to be executed on the localhost, not on the network device being processed. 
+    
+    - name: Confirm and create directory
+      file: 
+        path: "{{backup_dir}}" 
+        state: 'directory'
+
+    - name: Saving the Configuration to the file "{{backup_dir}}"
+      juniper_junos_config:
+        retrieve: 'committed'
+        dest: "{{backup_conf_file}}"
+        provider: "{{connection_settings}}"
+        format: text
+
+    - name: 
+      debug:
+        msg: "The configuration backup is in {{ backup_conf_file }}"

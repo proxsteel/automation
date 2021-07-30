@@ -1,0 +1,75 @@
+---
+- name: Backing up configurations and skip duplicates if NO DIFF
+  hosts: [srx210-1, srx210-2]
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+
+  #vars_prompt 
+  vars:
+    systime: "{{ansible_date_time.time | replace(':', '_')}}"
+    timestamp: "{{ansible_date_time.date}}_{{systime}}"
+    backup_dir: "{{user_data_path}}/backups/{{inventory_hostname}}"
+    backuped_file: "{{backup_dir}}/{{inventory_hostname}}__{{timestamp}}.conf"
+    connection_settings:
+      user: "{{ansible_user}}"
+      passwd: "{{ansible_ssh_pass}}"
+      host: "{{inventory_hostname}}"
+
+  tasks:
+    - name: Collecting localhost ENV vars for timestamp
+      setup:
+      run_once: yes
+      delegate_to: 'localhost'
+      #order is important -- debuginh variables before setup wont work: VARIABLE IS NOT DEFINED! 
+    - debug: var=systime
+    - debug: var=timestamp
+    - debug: var=backup_dir
+    - debug: var=backuped_file
+
+    - name: create or confirm if backups directory is present
+      file:
+        path: "{{backup_dir}}"
+        state: directory
+
+    - name: Check if there any previous backup exists 
+      find:
+        file_type: file
+        path: "{{backup_dir}}"
+        patterns: "{{inventory_hostname}}*.conf"
+      register: old_configs_details
+
+    - debug: var=old_configs_details
+
+    - name: save the name of last config from previous configs
+      set_fact:
+        previous_config: "{{old_configs_details.files | sort(attribute='path') | map(attribute='path') | list | last}}"
+      when: old_configs_details.matched > 0  #matched - dictionary
+
+    - debug: var=previous_config
+
+    - name: Retrieving and saving the configuration for "{{inventory_hostname}} device"
+      juniper_junos_config:
+        provider: "{{connection_settings}}"
+        retrieve: committed
+        format: text
+        dest: "{{backuped_file}}"
+
+    - name: Displaying the path to stored configs
+      debug:
+        msg: "Backup information is stored in {{backuped_file}} file"
+
+    - name: get the diff between backup files
+      shell: diff -I '^## Last [changed|commit]' {{previous_config}} {{backuped_file}}
+      when: previous_config is defined 
+      register: diff_result
+      failed_when: diff_result.rc > 1
+   
+    - debug: var=diff_result.rc  
+    - debug: var=diff_result
+
+    - name: Delete the new backup if same as previous
+      file:
+        path: "{{backuped_file}}"
+        state: absent
+      when: (diff_result.changed) and (diff_result.rc == 0)

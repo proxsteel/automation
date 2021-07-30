@@ -1,0 +1,40 @@
+---
+- name: Play - Retreiving the UP Time
+  hosts:
+    - srx210-1
+    - srx210-2
+    - ex3200-1
+  roles:
+    - Juniper.junos
+  gather_facts: no
+  connection: local
+
+#here could be vars or vars_prompt
+
+  tasks:
+    - name: Geting uptime via junos_command core module
+      junos_command:
+        #unsupported parameters in Core mudules - see provider:
+        #user: "{{ ansible_user }}" 
+        #passwd: "{{ ansible_ssh_pass }}"
+        commands:
+          - show system uptime
+
+      register: core_command
+
+    - name: print the STDOUT
+      #debug: var=core_command.stdout
+      debug: var=core_command['stdout_lines']     
+
+    - name: Getting uptime via juniper_junos_command galaxy module
+      juniper_junos_command:
+        user: "{{ ansible_user }}"
+        passwd: "{{ ansible_ssh_pass }}"
+        commands:
+          - show system uptime
+
+      register: galaxy_command
+
+    - name: print the STDOUT
+      debug: 
+        var: galaxy_command.stdout_lines

@@ -1,0 +1,42 @@
+---
+- name: Play - Set NTP server
+  hosts: firewalls
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+
+#uncoment if no any user and pass have been setup in host-vars or group-vars 
+#  vars_prompt:
+#   - name: USERNAME
+#     prompt: User name
+#     private: no 
+#   - name: DEVICE_PASSWORD
+#     prompt: Device password
+#     private: yes
+
+  tasks:
+  - name: Push the new NTP server to device(s)
+    juniper_junos_config:
+#      user: "{{ USERNAME }}"
+#      passwd: "{{ DEVICE_PASSWORD }}"
+      config_mode: exclusive
+      load: replace
+      lines:
+        - <configuration>
+        -   <system>
+        -     <ntp replace='replace'>
+        -       <server>
+        -         <name>{{ntp_server}}</name>
+        -       </server>
+        -     </ntp>
+        -   </system>
+        - </configuration>
+      format: xml
+      commit: true
+    register: response
+      
+  - name: Print the config diff - show compare
+    debug: var=response.diff_lines
+#      var: response.config_lines

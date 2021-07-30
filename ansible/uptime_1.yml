@@ -1,0 +1,14 @@
+---
+- name: Play - Retreiving the UP Time
+  hosts:
+    - srx210-1
+    - srx210-2
+    - ex3200-1
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - debug: var=inventory_hostname
+
+    - debug:
+        var: ansible_host

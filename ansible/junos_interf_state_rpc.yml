@@ -1,0 +1,45 @@
+---
+- name: Play - retrieve interfaces stats
+  hosts: firewalls
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+#  vars_prompt:
+#    - name: USERNAME
+#      prompt: User Name
+#      private: no
+#    - name: USER_PASSWORD
+#      prompt: Enter Password
+#      private: yes
+
+  tasks:
+    - name: Get interface interface information
+      juniper_junos_rpc:
+        rpcs: get-interface-information
+        kwargs:
+          #media: true
+          #terse: True
+          detail: True
+          interface_name: ge-0/0/0
+        format: xml
+          #default format is XML anyway can be skipped.
+
+      register: rpc_output
+
+#    - name: Print the output
+#      debug: #var=rpc_output.stdout_lines
+#        msg: "{{ rpc_output.stdout_lines }}"
+
+    - name: query interface information usinf XPath
+      xml:
+        xmlstring: "{{ rpc_output.stdout }}"
+        xpath: //logical-interface/address-family[address-family-name='inet']/interface-address/ifa-local
+        content: text
+      
+      register: ip_addr
+
+    - name: show query results
+      debug:
+        var: ip_addr.matches

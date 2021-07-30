@@ -1,0 +1,48 @@
+---
+- name: Playbook - Retrive Facts from devices
+  hosts: firewalls      #host or grup group of hosts 
+  roles:                #roles are downloaded from Ansible-galaxy,See also collections
+   - Juniper.junos      #Imports Juniper.junos role to access relevant modules
+  connection: local     #the mudules are executed localy not on remote devices, after that are pushed to device via netconf in XML format
+  gather_facts: no      #since are executed localy, there is no reason to gather_facts
+
+#uncoment if no host-vars or group-vars passwd and user are not used
+#  vars_prompt:
+#   - name: USERNAME
+#     prompt: User name
+#     private: no 
+#   - name: DEVICE_PASSWORD
+#     prompt: Device password
+#     private: yes
+
+  tasks:
+   - name: Get Junos Device Information using juniper_junos_facts module
+     juniper_junos_facts:                   #exceute the juniper_junos_facts module in order to gather facts.
+#       user: "{{ USERNAME }}"
+#       passwd: "{{ DEVICE_PASSWORD }}"
+     register: junos_facts
+
+   - name: Print Facts
+     debug:                                 #exceute the debug module and print the output.
+#       msg: "{{ junos_facts }}"
+       var: junos_facts.facts.version
+   
+   - name: Get Junos Device Information using Junos RPC module
+     juniper_junos_rpc:
+#       user: "{{ USERNAME }}"
+#       passwd: "{{ DEVICE_PASSWORD }}"
+       rpcs: get-software-information
+#       formats: text
+ 
+     register: rpc_response
+     
+   - name: Print RPC responce
+     debug:
+       var: rpc_response 
+         #  rpc_response['hostname']
+         #  rpc_response['parsed_output'] ['software-information'] ['junos_version'] #to filter the output
+
+
+
+
+       

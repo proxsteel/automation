@@ -1,0 +1,38 @@
+---
+- name: Backing up device's configuration
+  roles:
+    - Juniper.junos
+  hosts: 
+    - srx210-1
+    - srx210-2
+  connection: local
+  gather_facts: no
+
+#here could be vars_prompt for credential colecting 
+
+  vars:
+    #moved to group_vars as user_data_path: ~/automation/ansible 
+    backup_dir: "{{ user_data_path }}/backups"  
+    backup_conf_file: "{{backup_dir}}/{{inventory_hostname}}.conf"
+    connection_settings:
+      host: "{{ansible_host}}"
+      passwd: "{{ansible_ssh_pass}}"
+      user: "{{ansible_user}}"
+
+  tasks:
+    - debug: var=backup_dir
+    - debug: var=user_data_path
+    
+    - name: Confirm and create directory
+      file: 
+        path: "{{backup_dir}}" 
+        state: 'directory'
+      run_once: yes  #Bool that will bypass the host loop, forcing the task to attempt to execute on the first host available and afterwards apply any results and facts to all active hosts in the same batch.
+      delegate_to: 'localhost'  #checking or creating a directory on the local file system - to be executed on the localhost, not on the network device being processed.
+
+    - name: Saving the Configuration to the file "{{backup_dir}}"
+      juniper_junos_config:
+        retrieve: 'committed'
+        dest: "{{backup_conf_file}}"
+        provider: "{{connection_settings}}"
+        format: text

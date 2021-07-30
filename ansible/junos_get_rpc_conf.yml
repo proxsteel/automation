@@ -1,0 +1,55 @@
+---
+- name: Play - Retrieve interface configuration
+  hosts: firewalls
+  roles: 
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+  
+#uncoment if no host-vars or group-vars passwd and user are not used
+#  vars_prompt:
+#   - name: USERNAME
+#     prompt: User name
+#     private: no 
+#   - name: DEVICE_PASSWORD
+#     prompt: Device password
+#     private: yes
+
+  tasks:
+    - name: Retrieve committed configuration of the interfaces
+      juniper_junos_config: #https://junos-ansible-modules.readthedocs.io/en/2.4.0/juniper_junos_config.html
+#        user: "{{ USERNAME }}"
+#        passwd: "{{ DEVICE_PASSWORD }}"
+        retrieve: committed  #commited == active or running
+        filter: system/services
+        format: xml
+
+      register: response
+                
+ 
+    - name: Print the the config lines
+      debug: #var=response.config_lines -- allowed too
+        var: response.config_lines      #var is not "{{}}". why not msg? because msg shows system messages for this module, in other words is operational not config 
+
+
+    - name: Same thing but via juniper_junos_rpc module
+      juniper_junos_rpc:
+        rpcs: get-config    #filter works only if rpcs option contains a single RPC and it is get-config
+        filter: system/services
+        format: xml       
+
+      register: rpc_response
+
+    - name: print the RPC reply output
+      debug: var=rpc_response.stdout_lines
+
+    - name: Configuring Login and system Banner
+      juniper_junos_config:
+        config_mode: private    #default is exclusive
+        load: set
+        commit: true
+        lines: ['set system login message "\n\nProvisioned by Netconf\n\n"']
+      register: response
+
+    - name: printing out
+      debug: var=response.diff_lines

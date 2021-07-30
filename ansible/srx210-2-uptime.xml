@@ -1,0 +1,26 @@
+<system-uptime-information>
+  <current-time>
+    <date-time seconds="1613087484">2021-02-11 15:51:24 PST</date-time>
+  </current-time>
+  <system-booted-time>
+    <date-time seconds="1613068484">2021-02-11 10:34:44 PST</date-time>
+    <time-length seconds="19000">05:16:40</time-length>
+  </system-booted-time>
+  <protocols-started-time>
+    <date-time seconds="1613068698">2021-02-11 10:38:18 PST</date-time>
+    <time-length seconds="18786">05:13:06</time-length>
+  </protocols-started-time>
+  <last-configured-time>
+    <date-time seconds="1612470671">2021-02-04 12:31:11 PST</date-time>
+    <time-length seconds="616813">1w0d 03:20</time-length>
+    <user>dotel</user>
+  </last-configured-time>
+  <uptime-information>
+    <date-time seconds="1613087484">3:51PM</date-time>
+    <up-time seconds="19030">5:17</up-time>
+    <active-user-count format="0 users">0</active-user-count>
+    <load-average-1>0.38</load-average-1>
+    <load-average-5>0.21</load-average-5>
+    <load-average-15>0.13</load-average-15>
+  </uptime-information>
+</system-uptime-information>

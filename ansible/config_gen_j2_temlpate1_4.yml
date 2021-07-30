@@ -1,0 +1,68 @@
+---
+- name: config gen using Jinja2 Template
+  hosts: [firewalls]
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+
+  vars:
+    tmp_dir: "{{user_data_path}}/tmp"
+    config_file: "{{tmp_dir}}/{{inventory_hostname}}.conf"
+    connection_settings:
+      host: "{{ansible_host}}"
+      user: "{{ansible_user}}"
+      passwd: "{{ansible_ssh_pass}}"
+      port: 22
+      timeout: 31
+  
+  tasks:
+#    - debug: var=tmp_dir
+#    - debug: var=config_file
+    
+    - name: Confirm if TMP dir in place
+      file:
+        path: "{{tmp_dir}}"
+        state: 'directory'
+      run_once: yes
+      delegate_to: 'localhost'
+
+    - name: Generate the config file
+      template:                             #module tells Ansible to parse a Jinja2 file
+        src: "template/base-settings.j2"
+        dest: "{{config_file}}"
+
+    - name: Upload the new config to device
+      juniper_junos_config:
+        provider: "{{connection_settings}}"
+        load: replace     #merge or replace or overide(overwrite)
+        src: "{{config_file}}"
+#        diff: yes 
+        #by default is true when loading configuration files; this line simply makes the default explicit for illustration.
+        #if set no then: "response.diff_lines": "VARIABLE IS NOT DEFINED!"
+        
+        #dest_dir: "{{tmp_dir}}  #save the diff output to a file.diff ex: inventory_hostname.diff, by default the j_j_config module records the changes 
+        #commit_check: True
+        #commit: true
+        comment: "Uploading the NTP config based on base-config.j2 template"
+        ignore_warning: yes 
+        #to continue and not interupt the proccess when delete a configuration statement that does not exist.
+        #ex: Failure loading the configuraton: ConfigLoadError(severity: None, bad_element: None, message: warning: statement not found\nwarning: statement not found)
+      register: response
+      notify: confirm previous commit
+
+    - name: Print the config diff - show compare
+      debug: var=response.diff_lines
+      when: response.diff_lines is defined
+
+    - name: Delete temporary files that were genereated during runing this Playbook
+      file:
+        path: "{{config_file}}"
+        state: 'absent'
+      
+  handlers:
+    - name: confirm previous commit
+      juniper_junos_config:
+        provider: "{{connection_settings}}"
+        diff: no
+        commit: yes
+        comment: "Confirmed"

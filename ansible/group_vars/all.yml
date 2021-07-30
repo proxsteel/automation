@@ -1,0 +1,9 @@
+ansible_python_interpreter: /usr/bin/python3
+user_data_path: /home/dotel/automation/ansible
+ansible_ssh_pass: junOS1314
+ansible_user: dotel
+ntp_server: 192.168.0.99
+dns1: 192.168.0.165
+dns2: 8.8.8.8
+ntp1: 192.168.0.99
+ntp2: 192.168.0.1

@@ -1,0 +1,23 @@
+---
+- name: Backing up configurations to backup directory
+  hosts: firewalls
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+
+  vars:
+    backup_dir: "backups"
+    backup_file: "{{backup_dir}}/{{inventory_hostname}}.conf"
+
+  tasks:
+    - name: Create Backup directory
+      file:
+        path: "{{backup_dir}}"
+        state: directory
+
+    - name: Retrieve the Configuration from device
+      juniper_junos_config:
+        retrieve: committed
+        format: text
+        dest: "{{backup_file}}"
+        logfile: "junos_config.log"

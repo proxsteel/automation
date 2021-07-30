@@ -1,0 +1,30 @@
+---
+- name: Play - Retreive device's facts
+  hosts: firewalls
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+#specific credentials if there isn't any in host or group vars
+  vars_prompt:
+    - name: USERNAME
+      prompt: User name
+      private: no
+    - name: DEVICE_PASSWORD
+      prompt: Enter Password
+      private: yes
+
+  tasks:
+    - name: Get Facts
+      juniper_junos_facts:
+        user: "{{USERNAME}}"
+        passwd: "{{DEVICE_PASSWORD}}"
+        #config_format: json #None,xml,set,text,json:to retrieve the active config and format of it
+      
+      register: junos_facts
+    - name: Print Facts
+      debug:
+        msg: "{{ junos_facts }}" 
+ #       var: junos_facts.facts.version 
+#      debug: var=junos_facts.facts.personality

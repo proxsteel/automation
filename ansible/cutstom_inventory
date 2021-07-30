@@ -1,0 +1,10 @@
+[firewalls]
+srx210-1	ansible_host=192.168.0.11	device_role=router
+srx210-2
+
+[sw]
+ex4200-1
+
+[Juniper:children]
+firewalls
+sw

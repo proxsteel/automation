@@ -1,0 +1,29 @@
+---
+- name: Play - retrieve interfaces stats
+  hosts: firewalls
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+#  vars_prompt:
+#    - name: USERNAME
+#      prompt: User Name
+#      private: no
+#    - name: USER_PASSWORD
+#      prompt: Enter Password
+#      private: yes
+
+  tasks:
+    - name: Show interface terse for a range of interfaces
+      juniper_junos_command:
+#        user: "{{ USERNAME }}"
+#        passwd: "{{ USER_PASSWORD }}"
+        commands:
+          - show interface fe-0/0/[27]* terse
+
+      register: cmd_output
+
+    - name: Print the output
+      debug: #var=cmd_output.stdout_lines
+        msg: "{{ cmd_output.stdout_lines }}"

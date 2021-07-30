@@ -1,0 +1,42 @@
+---
+- name: Set Variables and retrieve timestamp  
+  hosts: [localhost]
+  connection: local
+  gather_facts: yes
+
+  vars:
+    systime: "{{ansible_date_time.time | replace (':', '-')}}"
+
+  tasks:
+    - debug: var=ansible_date_time.time
+    - debug: var=systime
+
+    - name: set system date and time
+      set_fact:
+        timestamp: "{{ansible_date_time.date}}-{{systime}}"
+
+
+- name: Backing up the configuration 
+  hosts: firewalls
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no    #ansible_date_time is part of gather_facts module
+
+  tasks:
+    - name: getting device facts
+      juniper_junos_facts:
+        host: "{{ inventory_hostname }}"
+      
+      register: f_output
+
+#    - name: debuging date
+#      debug: var=f_output.facts
+
+    - name: Saving the configuration
+      juniper_junos_config:
+        retrieve: committed  #commited == active or running
+        format: text
+        dest: "{{f_output.facts.hostname}}-{{hostvars.localhost.timestamp}}.conf"
+        logfile: "junos_config.log"  # "logfile works with debug level or -vvvv"
+ 

@@ -1,0 +1,22 @@
+---
+- name: Retreive facts 
+  hosts:
+    - srx210-1
+    - srx210-2
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+#var_prompt:
+
+  tasks:
+    - name: Get Hostname and Serial-Number
+      juniper_junos_facts:
+        host: "{{inventory_hostname}}"
+
+      register: jfacts
+
+    - name: printed result 
+      debug: msg="Device hostname {{jfacts.facts.hostname}}, Device Serial {{jfacts.facts.serialnumber}}, Device SW version {{jfacts.facts.version}}"
+ 

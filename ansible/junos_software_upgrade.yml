@@ -1,0 +1,17 @@
+---
+- name: JunOS Upgrade PlayBook
+  hosts: jsw
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Check the current version and make snapshots
+      juniper_junos_software:
+        local_package: "./images/"
+     
+      register: response
+
+    - name: Print the complete response.
+      debug:
+        var: response

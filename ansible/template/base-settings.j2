@@ -1,0 +1,26 @@
+system {
+    replace: ntp {
+        server {{ntp1}};
+        server {{ntp2}};
+    }
+    replace:
+    name-server {
+        {{ dns1 }};
+        {{ dns2 }};
+    }
+    services {
+        delete: ftp;
+        netconf {
+            ssh {
+                connection-limit 3;
+                rate-limit 3;
+            }
+        }
+        ssh {
+            connection-limit 3;
+            rate-limit 3;
+        }
+       delete:  telnet;
+    }
+
+}

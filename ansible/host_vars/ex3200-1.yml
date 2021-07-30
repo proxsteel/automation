@@ -1,0 +1,7 @@
+#ansible_connection: ansible.netcommon.netconf #cisco or core module
+ansible_host: 192.168.0.10
+ansible_network_os: junos
+user: netconf
+user_password: junOS1314
+test_var: ge-0/0/47
+device_role: switch

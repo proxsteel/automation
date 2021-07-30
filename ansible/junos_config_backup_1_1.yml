@@ -1,0 +1,34 @@
+---
+- name: Backing up device's configuration
+  roles:
+    - Juniper.junos
+  hosts: 
+    - srx210-1
+    - srx210-2
+  connection: local
+  gather_facts: no
+
+#here could be vars_prompt for credential colecting 
+
+  vars:
+    backup_dir: "backups"
+    backup_conf_file: "{{backup_dir}}/{{inventory_hostname}}.conf"
+    connection_settings:
+      host: "{{ansible_host}}"
+      passwd: "{{ansible_ssh_pass}}"
+      user: "{{ansible_user}}"
+
+  tasks:
+    - name: Confirm and create directory
+      file: 
+        path: "{{backup_dir}}" 
+        state: 'directory'
+      run_once: yes 
+      delegate_to: 'localhost'
+
+    - name: Saving the Configuration to the file "{{backup_dir}}/{{inventory_hostname}}.conf"
+      juniper_junos_config:
+        retrieve: 'committed'
+        dest: "{{backup_conf_file}}"
+        provider: "{{connection_settings}}"
+        format: text

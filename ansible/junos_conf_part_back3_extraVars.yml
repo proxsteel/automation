@@ -1,0 +1,54 @@
+
+---
+- name: Get partial config -- temporarily
+  hosts: [srx210-1, srx210-2]
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+
+  vars:
+    backup_dir: "{{user_data_path}}/tmp"
+    backup_file: "{{backup_dir}}/{{inventory_hostname}}.conf"
+    connection_settings:
+      host: "{{ansible_host}}"
+      passwd: "{{ansible_ssh_pass}}"
+      user: "{{ansible_user}}"
+
+  tasks:
+    - name: Fail when 'filter' argument is not defined
+      fail:
+        msg: >
+          Specify the Junos configuration hierarchy you want to back up by
+          providing the extra variable 'filter' on the command line.
+          For example, --extra-vars 'filter=system/ntp'
+      when: filter is not defined
+ 
+    - name: Remove any previous backup files 
+      file:
+        path: "{{backup_dir}}"
+        state: 'absent'
+      run_once: yes
+      delegate_to: 'localhost'
+
+    - name: create backup directory
+      file:
+        path: "{{backup_dir}}"
+        state: 'directory'
+      run_once: yes 
+      delegate_to: 'localhost'
+    
+    - name: show filter settings extra-vars command-line argument
+      debug:
+        var: filter | mandatory
+        #msg: Required extra-vars command-line argument: --extra-vars="filter=xpath/element"'
+      run_once: yes 
+      
+    - name: Retrive the partial config
+      juniper_junos_config:
+        provider: "{{connection_settings}}"
+        retrieve: 'committed'
+        dest: "{{backup_file}}"
+        format: 'text'
+        filter: "{{filter | mandatory}}"
+
+  #Run the playbook with the argument --extra-vars="filter=system/host-name": 

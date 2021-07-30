@@ -1,0 +1,30 @@
+---
+- name: Play - retrieve interfaces stats
+  hosts: jsw
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+#  vars_prompt:
+#    - name: USERNAME
+#      prompt: User Name
+#      private: no
+#    - name: USER_PASSWORD
+#      prompt: Enter Password
+#      private: yes
+
+  tasks:
+    - name: Show interface terse for a interface passed as a variable from host_vars
+      juniper_junos_command:
+        user: "{{ user }}"
+        passwd: "{{ ansible_ssh_pass }}"
+        commands:
+          - show interfaces "{{ test_var }}" terse
+                                                   #see in host_vars
+
+      register: cmd_output
+
+    - name: Print the output
+      debug: #var=cmd_output.stdout_lines
+        msg: "{{ cmd_output.stdout_lines }}"

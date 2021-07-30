@@ -1,0 +1,36 @@
+---
+- name: Play - SRX210 OS upgrade
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+  hosts: firewalls
+  #next block is optional or can be subtituted by SSH/RSA keys or Vault file encryption
+#  vars_prompt:
+#    - name: USERNAME
+#      prompt: Enter Username
+#      private: no
+#    - name: PASSWORD
+#      prompt: Enter Password
+#      private: yes
+  vars:
+#    OS_version: "17.3R1.10"
+#    OS_package: "jinstall-ppc-17.3R1.10-signed.tgz"
+#    pkg_dir: "software"
+#    log_dir: "/var/log/ansible"
+    netconf_port: 830
+    wait_time: 3600
+
+
+  tasks: 
+    - name: Checking NETCONF connectivity
+      wait_for:
+        #user: "{{ USERNAME }}"
+        #passwd: "{{ PASSWORD }}"
+        host: "{{ inventory_hostname }}"
+        port: "{{ netconf_port }}"
+        timeout: 15
+
+      register: confirmation_status
+    
+#    - name: printing the NETCONF connection status
+#      debug: var=confirmation_status

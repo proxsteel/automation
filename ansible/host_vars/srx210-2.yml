@@ -1,0 +1,7 @@
+#ansible_connection: ansible.netcommon.netconf #cisco or core module
+ansible_host: 192.168.0.12
+ansible_network_os: junos
+device_role: firewall
+dns2: 8.8.4.4
+MGMT_INTF: fe-0/0/7
+IPADD: 192.168.0.12/24

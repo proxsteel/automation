@@ -1,0 +1,27 @@
+---
+- name: Playbook - Request Power-Off
+  hosts: firewalls
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+
+#  vars_prompt:
+#    - name: USERNAME
+#      prompt: Enter Username
+#      private: no
+#    - name: DEVICE_PASSWORD
+#      prompt: Enter Password
+#      private: yes
+  tasks:
+    - name: Show interface terse
+      juniper_junos_command:
+#        user: "{{ USERNAME }}"
+#        passwd: "{{ DEVICE_PASSWORD }}"
+        commands:
+          - request system power-off # -C or --check dosent work with operational commands
+                                 
+      register: cmd_output
+
+    - name: Print result
+      debug: #var=cmd_output.stdout_lines
+        msg: "{{ cmd_output.stdout_lines }}"   #another option to print the stdouts

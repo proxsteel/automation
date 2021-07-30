@@ -1,0 +1,42 @@
+---
+- name: Play - Configure NTP server using XML templet
+  hosts: firewalls
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+#uncoment if no any user and pass have been setup in host-vars or group-vars 
+#  vars_prompt:
+#   - name: USERNAME
+#     prompt: User name
+#     private: no 
+#   - name: DEVICE_PASSWORD
+#     prompt: Device password
+#     private: yes
+
+  tasks:
+    - name: Push the NTP config and replace in use one
+      juniper_junos_config:
+        #user: "{{USERNAME}}"
+        #passwd: "{{DEVICE_PASSWORD}}"
+        config_mode: exclusive  # or private
+        load: replace           # or merge/update/override/overwrit/epathc
+        lines:
+          - <configuration>
+          -   <system>
+          -     <ntp replace='replace'>
+          -       <server>
+          -         <name>{{ntp_server}}</name>
+          -       </server>
+          -     </ntp>
+          -   </system>
+          - </configuration>
+        format: xml
+        commit: true
+
+      register: STD_OUT
+
+    - name: Print the show|compare == diff
+      debug: 
+        var: STD_OUT.diff_lines

@@ -1,0 +1,42 @@
+---
+- name: Get partial config -- temporarily
+  hosts: [srx210-1, srx210-2]
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+
+  vars:
+    backup_dir: "{{user_data_path}}/tmp"
+    backup_file: "{{backup_dir}}/{{inventory_hostname}}.conf"
+    connection_settings:
+      host: "{{ansible_host}}"
+      passwd: "{{ansible_ssh_pass}}"
+      user: "{{ansible_user}}"
+
+  tasks:
+    - debug: var=backup_dir
+    - debug: var=backup_file
+    - name: Remove any previous backup files 
+      file:
+        path: "{{backup_dir}}"
+        state: 'absent'
+      run_once: yes
+      delegate_to: 'localhost'
+      
+    - name: create backup directory
+      file:
+        path: "{{backup_dir}}"
+        state: 'directory'
+      run_once: yes 
+      delegate_to: 'localhost'
+
+    - name: Retrive the partial config
+      juniper_junos_config:
+        provider: "{{connection_settings}}"
+        retrieve: 'committed'
+        dest: "{{backup_file}}"
+        format: 'text'
+        filter: "system/ntp"
+      
+      register: part_conf
+    - debug: var=part_conf 

@@ -1,0 +1,6 @@
+---
+- name: Play 1 - Jsnappy - test
+  hosts: firewalls
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no

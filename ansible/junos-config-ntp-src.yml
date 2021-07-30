@@ -1,0 +1,35 @@
+---
+- name: Play - Set NTP server
+  hosts: srx210-2
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+
+#uncoment if no any user and pass have been setup in host-vars or group-vars 
+#  vars_prompt:
+#   - name: USERNAME
+#     prompt: User name
+#     private: no 
+#   - name: DEVICE_PASSWORD
+#     prompt: Device password
+#     private: yes
+
+  tasks:
+  - name: Push the new secondary NTP server to device(s)
+    juniper_junos_config:
+#      user: "{{ USERNAME }}"
+#      passwd: "{{ DEVICE_PASSWORD }}"
+      config_mode: exclusive
+      load: replace                   #replace , set, merge, 
+      src: ntp_templet.conf
+      format: text			#text - means it's conf fromat but format could be set or xml too
+      commit_check: True
+      commit: true
+      comment: "New NTP config- pushed from Ansible"
+    register: response
+      
+  - name: Print the config diff - show compare
+    debug: var=response.diff_lines
+#      var: response.config_lines

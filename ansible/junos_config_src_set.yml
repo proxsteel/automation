@@ -1,0 +1,35 @@
+---
+- name: Configuring JunOS device using set and text files
+  hosts: 
+    - firewalls
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+  
+  vars:
+    connection_settings:
+      host: "{{ansible_host}}"
+      user: "{{ansible_user}}"
+      passwd: "{{ansible_ssh_pass}}"
+      timeout: 30
+  
+  tasks:
+    - name: configuriong NTP server using text format file
+      juniper_junos_config:
+        provider: "{{connection_settings}}"
+        load: set
+        #used delete and replace lable with merge option and worked but recommended to use replace delete lable in text document and replace arg. in playbook
+        #if load: replace used without delete or replace lable in config file then merge is performed. 
+        src: "ntp_templet.set"
+        #format: text            #useful with retrieve argument has no diference with load ...
+        commit_check: True
+        commit: true
+        comment: "New NTP config merged - pushed from Ansible"
+
+      register: response
+
+    - name: Print the config diff - show compare
+      debug: var=response.diff_lines
+#       var: response.config_lines      
+

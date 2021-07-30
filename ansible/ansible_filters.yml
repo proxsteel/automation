@@ -1,0 +1,50 @@
+---
+- name: Backing up configurations and skip duplicates if NO DIFF
+  hosts: [srx210-1, srx210-2]
+  roles: [Juniper.junos]
+  connection: local
+  gather_facts: no
+
+  #vars_prompt 
+  vars:
+    systime: "{{ansible_date_time.time | replace(':', '_')}}"
+    timestamp: "{{ansible_date_time.date}}_{{systime}}"
+    backup_dir: "{{user_data_path}}/backups/{{inventory_hostname}}"
+    backuped_file: "{{backup_dir}}/{{inventory_hostname}}__{{timestamp}}.conf"
+    connection_settings:
+      user: "{{ansible_user}}"
+      passwd: "{{ansible_ssh_pass}}"
+      host: "{{inventory_hostname}}"
+
+  tasks:
+    - name: Collecting localhost ENV vars for timestamp
+      setup:
+      run_once: yes
+      delegate_to: 'localhost'
+      #order is important -- debuginh variables before setup wont work: VARIABLE IS NOT DEFINED!
+    - debug: var=systime
+    - debug: var=timestamp
+    - debug: var=backup_dir
+    - debug: var=backuped_file
+
+    - name: create or confirm if backups directory is present
+      file:
+        path: "{{backup_dir}}"
+        state: directory
+
+    - name: Check if there any previous backup exists 
+      find:
+        file_type: file
+        path: "{{backup_dir}}"
+        patterns: "{{inventory_hostname}}*.conf"
+      register: old_configs_details
+
+    - debug: var=old_configs_details
+
+    - name: save the name of last config from previous configs
+      set_fact:
+        previous_config: "{{old_configs_details.files | sort(attribute='path') | map(attribute='path') | list | last}}" 
+        #https://www.tailored.cloud/devops/how-to-filter-and-map-lists-in-ansible/
+      when: old_configs_details.matched > 0  #matched - dictionary
+
+    - debug: var=previous_config   #previous_config: VARIABLE IS NOT DEFINED! -- if the backup_dir is empty

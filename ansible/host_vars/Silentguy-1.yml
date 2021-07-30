@@ -1,0 +1,5 @@
+#ansible_connection: ansible.netcommon.network_cli
+ansible_host: 192.168.0.99
+ansible_network_os: ios
+ntp_server: 72.87.88.202
+device_role: switch

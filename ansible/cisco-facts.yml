@@ -1,0 +1,17 @@
+---
+- name: Cisco Gather facts
+  hosts: Silentguy-1
+  connection: local
+  gather_facts: no
+  
+  tasks:
+    - name: Get Facts on Cisco 
+      ios_command:
+        commands:
+          - show version
+      
+      register: cisco_facts
+    
+    - name: print the facts
+      debug:
+        msg: "{{ cisco_facts.stdout_lines }}"

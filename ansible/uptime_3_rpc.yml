@@ -1,0 +1,45 @@
+---
+- name: Play - retreive uptime using RPC module
+  hosts:
+    - srx210-1
+    - srx210-2
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Checking NETCONF connectivity
+      wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 830
+        timeout: 15
+
+    - name: Using junos_rpc module -- get uptime
+      junos_rpc:
+        rpc: get-system-uptime-information
+        output: text
+        timeout: 20
+        provider:
+          host: "{{ inventory_hostname }}"
+          username: "{{ ansible_user }}"
+          password: "{{ ansible_ssh_pass }}"
+          port: 830      
+      
+      register: uptime_rpc
+
+    - name: print outputs
+      debug: var=uptime_rpc.output_lines   
+      #oposit to stdout_lines in juniper_junos modules
+
+    - name: Using juniper_junos_rpc module -- get UPTIME
+      juniper_junos_rpc:
+        user: "{{ansible_user}}"
+        passwd: "{{ansible_ssh_pass}}"
+        rpcs: get-system-uptime-information
+        format: text
+ 
+      register: j_uptime_rpc
+
+    - name: print outputs
+      debug: var=j_uptime_rpc.stdout_lines

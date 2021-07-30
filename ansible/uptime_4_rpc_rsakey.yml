@@ -1,0 +1,33 @@
+---
+- name: Play - retreive uptime using RPC module
+  hosts:
+    - srx210-1
+    - srx210-2
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Checking NETCONF connectivity
+      wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 830
+        state: started
+        timeout: 15
+
+      register: NETCONF_status
+    
+    - name: print NETCONF_status
+      debug: var=NETCONF_status.state 
+
+    - name: Using juniper_junos_rpc module -- get UPTIME
+      juniper_junos_rpc:
+        rpcs: get-system-uptime-information
+        format: xml
+        dest: "{{inventory_hostname}}-uptime.xml"
+ 
+      register: j_uptime_rpc
+
+    - name: print outputs
+      debug: var=j_uptime_rpc.stdout_lines

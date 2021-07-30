@@ -1,0 +1,29 @@
+---
+- name: Retrive Interface information
+  hosts: firewalls
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+  
+#uncoment if no host-vars or group-vars passwd and user are not used
+#  vars_prompt:
+#   - name: USERNAME
+#     prompt: User name
+#     private: no 
+#   - name: DEVICE_PASSWORD
+#     prompt: Device password
+#     private: yes
+  tasks:
+    - name: Show interface terse
+      juniper_junos_command:
+#        user: "{{ USERNAME }}"
+#        passwd: "{{ DEVICE_PASSWORD }}"
+        commands:
+          - show interface fe-0/0/[2-7]* terse  
+                                 #[0-7] is a range, [02] - 0 & 2 only, * - any sub-interface
+      register: cmd_output
+            
+    - name: Print result
+      debug:
+        msg: "{{ cmd_output.stdout_lines }}"   # 

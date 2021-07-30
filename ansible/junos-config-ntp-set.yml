@@ -1,0 +1,35 @@
+---
+- name: Play - Set NTP server
+  hosts: firewalls
+  roles:
+    - Juniper.junos
+  connection: local
+  gather_facts: no
+
+
+#uncoment if no any user and pass have been setup in host-vars or group-vars 
+#  vars_prompt:
+#   - name: USERNAME
+#     prompt: User name
+#     private: no 
+#   - name: DEVICE_PASSWORD
+#     prompt: Device password
+#     private: yes
+
+  tasks:
+  - name: Push the new secondary NTP server to device(s)
+    juniper_junos_config:
+#      user: "{{ USERNAME }}"
+#      passwd: "{{ DEVICE_PASSWORD }}"
+      config_mode: exclusive
+      load: merge                   #replace , set, merge, 
+      lines:
+        - set system ntp server 192.168.0.100
+      format: set
+      commit: true
+      comment: "Adding new NTP server"
+    register: response
+      
+  - name: Print the config diff - show compare
+    debug: var=response.diff_lines
+#      var: response.config_lines

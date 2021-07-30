@@ -1,0 +1,9 @@
+interfaces {
+    {{MGMT_INTF}} {
+        description "MGMT ge-0/7";
+        unit 0 {
+            family inet {
+                delete: address {{IPADD}};
+            }
+        }
+    }
